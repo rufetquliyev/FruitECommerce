@@ -1,0 +1,43 @@
+﻿@using ECommerce.Core.Entities
+@model IQueryable<Fruit>
+@{
+    int count = 0;
+}
+<div class="container">
+<h2> Fruits </h2>
+    <a asp-action="Create" asp-controller="Fruit" type="submit" class="btn btn-primary" style="margin-left: 90%;" >Create</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Fruit Name</th>
+            <th scope="col">Category Name</th>
+            <th scope="col">Created At</th>
+            <th scope="col">Image</th>
+            <th scope="col">Operations</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            count++;
+            <tr>
+                <th scope="row">@count</th>
+                <td>@item.FruitName</td>
+                <td>@item.CategoryName</td>
+                <td>@item.CreatedAt</td>
+                <td>
+                    <div style="width:100%">
+                        <img style="width:100px;border-radius:50%" src="~/Upload/FruitImages/@item.ImgUrl"/>
+                    </div>
+                </td>
+                <td>
+                    <a asp-action="Update" asp-controller="Fruit" asp-route-id="@item.Id" type="submit" class="btn btn-warning">Update</a>
+                    <a asp-action="Delete" asp-controller="Fruit" asp-route-id="@item.Id" type="submit" class="btn btn-danger">Delete</a>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+</div>
