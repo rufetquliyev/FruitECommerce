@@ -13,8 +13,8 @@ namespace ECommerce.Business.ViewModels.FruitVMs
         public int Id { get; set; }
         public string FruitName { get; set; }
         public string CategoryName { get; set; }
-        public bool IsDeleted { get; set; }
         public IFormFile? Image { get; set; }
+        public bool IsDeleted { get; set; }
     }
     public class UpdateFruitValidator : AbstractValidator<UpdateFruitVm>
     {

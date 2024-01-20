@@ -30,14 +30,14 @@ namespace ECommerce.Business.ViewModels.UserVMs
             RuleFor(x => x.Username).NotNull().NotEmpty().WithMessage("Username cannot be empty.")
                 .MaximumLength(70).WithMessage("Username cannot be more than 70 characters.");
             RuleFor(x => x.Email).NotNull().NotEmpty().WithMessage("Email cannot be empty.")
-                .EmailAddress();
+                .EmailAddress().WithMessage("Email format is incorrect.");
             RuleFor(x => x.Password).NotNull().NotEmpty().WithMessage("Password cannot be empty.")
                 .Must(x =>
                 {
                     Regex regex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
                     bool match = regex.IsMatch(x);
                     return match;
-                }).WithMessage("Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.");
+                }).WithMessage("Password must contain minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.");
             RuleFor(x => x.ConfirmPassword).NotNull().NotEmpty().WithMessage("Confirm password cannot be empty.")
                 .Equal(x => x.Password).WithMessage("Confirm password must be equal to password.");
         }

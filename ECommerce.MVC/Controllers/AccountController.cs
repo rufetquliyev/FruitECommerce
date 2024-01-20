@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ECommerce.Business.Exceptions.User;
 using ECommerce.Business.Services.Interfaces;
 using ECommerce.Business.ViewModels.UserVMs;
 using ECommerce.Core.Entities;
@@ -46,8 +47,8 @@ namespace ECommerce.MVC.Controllers
                 foreach (var item in res.Errors)
                 {
                     ModelState.AddModelError("", item.Description);
+                    return View(vm);
                 }
-                return View(vm);
             }
             return RedirectToAction("Login");
         }
@@ -58,29 +59,32 @@ namespace ECommerce.MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginUserVm vm)
         {
-            LoginUserValidator validationRes = new LoginUserValidator();
-            var result = validationRes.Validate(vm);
-            if (result != null)
+            try
             {
-                foreach (var item in result.Errors)
+                LoginUserValidator validationRes = new LoginUserValidator();
+                var result = validationRes.Validate(vm);
+                if (!result.IsValid)
                 {
-                    ModelState.Clear();
-                    ModelState.AddModelError(item.PropertyName, item.ErrorMessage);
+                    foreach (var item in result.Errors)
+                    {
+                        ModelState.Clear();
+                        ModelState.AddModelError(item.PropertyName, item.ErrorMessage);
+                    }
+                    return View(vm);
                 }
-                return View(vm);
+                if (!ModelState.IsValid)
+                {
+                    return View(vm);
+                }
+                var user = await _accountService.Login(vm);
+                await _signInManager.SignInAsync(user, false);
+                return RedirectToAction("Index", "Home");
             }
-            if (!ModelState.IsValid)
+            catch (UserNotFoundException ex)
             {
+                ModelState.AddModelError(ex.ParamName, ex.Message);
                 return View(vm);
             }
-            var res = await _accountService.Login(vm);
-            if (!res.Success)
-            {
-                ModelState.AddModelError("", "Username Or Password is wrong!");
-                return View(vm);
-            }
-            await _signInManager.SignInAsync(res.user, false);
-            return RedirectToAction("Index", "Home");
         }
         public async Task<IActionResult> CreateRole()
         {

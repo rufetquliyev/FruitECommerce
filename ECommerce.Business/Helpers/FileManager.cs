@@ -11,6 +11,10 @@ namespace ECommerce.Business.Helpers
     {
         public static string UploadImg(this IFormFile file, string env, string folderName)
         {
+            if(!Directory.Exists(env + folderName))
+            {
+                Directory.CreateDirectory(env + folderName);
+            }
             string fileName = file.FileName.Length > 64 ? file.FileName.Substring(file.FileName.Length - 64, 64) : file.FileName;
             fileName = Guid.NewGuid().ToString() + fileName;
 

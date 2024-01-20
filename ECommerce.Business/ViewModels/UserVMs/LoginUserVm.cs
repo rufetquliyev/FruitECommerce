@@ -25,7 +25,7 @@ namespace ECommerce.Business.ViewModels.UserVMs
                     Regex regex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
                     bool match = regex.IsMatch(x);
                     return match;
-                }).WithMessage("Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.");
+                }).WithMessage("Password must contain minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.");
 
         }
     }

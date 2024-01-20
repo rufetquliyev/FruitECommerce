@@ -7,6 +7,7 @@ using ECommerce.Core.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ECommerce.MVC.Areas.Manage.Controllers
 {
@@ -23,7 +24,7 @@ namespace ECommerce.MVC.Areas.Manage.Controllers
             _mapper = mapper;
             _env = env;
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Moderator")]
         public async Task<IActionResult> Index()
         {
             var fruits = await _service.GetAllAsync();
@@ -39,14 +40,14 @@ namespace ECommerce.MVC.Areas.Manage.Controllers
         {
             CreateFruitValidator validator = new CreateFruitValidator();
             var res = await validator.ValidateAsync(vm);
-            if (res != null)
+            if (!res.IsValid)
             {
                 foreach (var item in res.Errors)
                 {
                     ModelState.Clear();
                     ModelState.AddModelError(item.PropertyName, item.ErrorMessage);
-                    return View(vm);
                 }
+                return View(vm);
             }
             if(!ModelState.IsValid)
             {
@@ -66,34 +67,48 @@ namespace ECommerce.MVC.Areas.Manage.Controllers
             catch (NegativeIdException ex)
             {
                 ModelState.AddModelError(ex.ParamName, ex.Message);
+                return RedirectToAction(nameof(Index));
             }
             catch (FruitNotFoundException ex)
             {
                 ModelState.AddModelError(ex.ParamName, ex.Message);
+                return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction("Index");
         }
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(UpdateFruitVm vm)
         {
-            UpdateFruitValidator validator = new UpdateFruitValidator();
-            var res = await validator.ValidateAsync(vm);
-            if (res != null)
+            try
             {
-                foreach (var item in res.Errors)
+                UpdateFruitValidator validator = new UpdateFruitValidator();
+                var res = await validator.ValidateAsync(vm);
+                if (!res.IsValid)
                 {
-                    ModelState.Clear();
-                    ModelState.AddModelError(item.PropertyName, item.ErrorMessage);
+                    foreach (var item in res.Errors)
+                    {
+                        ModelState.Clear();
+                        ModelState.AddModelError(item.PropertyName, item.ErrorMessage);
+                    }
                     return View(vm);
                 }
+                if (!ModelState.IsValid)
+                {
+                    return View(vm);
+                }
+                await _service.UpdateAsync(vm, _env.WebRootPath);
+                return RedirectToAction("Index");
             }
-            if (!ModelState.IsValid)
+            catch (FruitImageException ex)
             {
+                ModelState.AddModelError(ex.ParamName, ex.Message);
                 return View(vm);
             }
-            await _service.UpdateAsync(vm, _env.WebRootPath);
-            return RedirectToAction("Index");
+            catch (NegativeIdException ex)
+            {
+                ModelState.AddModelError(ex.ParamName, ex.Message);
+                return View(vm);
+            }
         }
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
@@ -101,16 +116,18 @@ namespace ECommerce.MVC.Areas.Manage.Controllers
             try
             {
                 await _service.Delete(id, _env.WebRootPath);
+                return RedirectToAction("Index");
             }
             catch (NegativeIdException ex)
             {
                 ModelState.AddModelError(ex.ParamName, ex.Message);
+                return RedirectToAction("Index");
             }
             catch (FruitNotFoundException ex)
             {
                 ModelState.AddModelError(ex.ParamName, ex.Message);
+                return RedirectToAction("Index");
             }
-            return RedirectToAction("Index");
         }
     }
 }

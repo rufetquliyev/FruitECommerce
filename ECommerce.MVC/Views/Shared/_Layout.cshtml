@@ -57,7 +57,7 @@
                                         <li class="active"><a href="#home">Home</a></li>
                                         @if (User.Identity.IsAuthenticated)
                                         {
-                                            <li><a asp-action="Index" asp-controller="Home">My Account</a></li>
+                                            <li><a asp-action="Index" asp-controller="Home">@User.Identity.Name</a></li>
                                             <li><a asp-action="Logout" asp-controller="Account">Logout</a></li>
                                         }
                                         else
@@ -68,12 +68,9 @@
 
                                         <li><a href="#fruits">Fruits</a></li>
                                         <li><a href="#blog">Blog</a></li>
-                                        @if (User.Identity.IsAuthenticated)
+                                        @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Moderator")))
                                         {
-                                            if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
-                                            {
-                                                <li><a asp-area="Manage" asp-action="Index" asp-controller="Dashboard">Manage</a></li>
-                                            }
+                                            <li><a asp-area="Manage" asp-action="Index" asp-controller="Dashboard">Manage</a></li>
                                         }
                                         else
                                         {

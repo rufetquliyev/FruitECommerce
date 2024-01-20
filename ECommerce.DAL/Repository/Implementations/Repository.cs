@@ -21,11 +21,10 @@ namespace ECommerce.DAL.Repository.Implementations
 
         public DbSet<T> Table => _context.Set<T>();
 
-        public async Task<T> CreateAsync(T entity)
+        public async Task CreateAsync(T entity)
         {
             await Table.AddAsync(entity);
             entity.CreatedAt = DateTime.Now;
-            return entity;
         }
 
         public async Task Delete(T entity)
@@ -35,13 +34,12 @@ namespace ECommerce.DAL.Repository.Implementations
 
         public async Task<IQueryable<T>> GetAllAsync()
         {
-            IQueryable<T> query =  Table.Where(x => !x.IsDeleted);
-            return query;
+            return Table.Where(x => !x.IsDeleted);
         }
 
         public async Task<T> GetByIdAsync(int id)
         {
-            return await Table.Where(x => x.Id == id).FirstOrDefaultAsync();
+            return await Table.Where(x => !x.IsDeleted && x.Id == id).FirstOrDefaultAsync();
         }
 
         public async Task SaveChangesAsync()
@@ -49,10 +47,9 @@ namespace ECommerce.DAL.Repository.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task<T> UpdateAsync(T entity)
+        public async Task UpdateAsync(T entity)
         {
             Table.Update(entity);
-            return entity;
         }
     }
 }

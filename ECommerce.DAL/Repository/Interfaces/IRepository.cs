@@ -12,8 +12,8 @@ namespace ECommerce.DAL.Repository.Interfaces
     {
         public Task<IQueryable<T>> GetAllAsync();
         public Task<T> GetByIdAsync(int id);
-        public Task<T> CreateAsync(T entity);
-        public Task<T> UpdateAsync(T entity);
+        public Task CreateAsync(T entity);
+        public Task UpdateAsync(T entity);
         public Task Delete(T entity);
         public Task SaveChangesAsync();
         DbSet<T> Table {  get; }

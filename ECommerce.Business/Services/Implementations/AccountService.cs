@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ECommerce.Business.Enums;
+using ECommerce.Business.Exceptions.User;
 using ECommerce.Business.Services.Interfaces;
 using ECommerce.Business.ViewModels.UserVMs;
 using ECommerce.Core.Entities;
@@ -45,28 +46,16 @@ namespace ECommerce.Business.Services.Implementations
             var res = await _userManager.CreateAsync(user, vm.Password);
             if (res.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, "Admin");
+                await _userManager.AddToRoleAsync(user, UserRoles.Admin.ToString());
             }
             return res;
         }
 
-        public async Task<LoginResult> Login(LoginUserVm vm)
+        public async Task<AppUser> Login(LoginUserVm vm)
         {
             AppUser user = await _userManager.FindByEmailAsync(vm.UsernameOrEmail) ?? await _userManager.FindByNameAsync(vm.UsernameOrEmail);
-            _mapper.Map(user, vm);
-            if (user == null)
-            {
-                return new LoginResult
-                {
-                    Success = false,
-                    user = null
-                };
-            }
-            return new LoginResult
-            {
-                Success = true,
-                user = user
-            };
+            if (user == null) throw new UserNotFoundException("Username / Email is wrong.", nameof(vm.UsernameOrEmail));
+            return user;
         }
     }
 }

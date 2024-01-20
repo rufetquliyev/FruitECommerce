@@ -12,12 +12,7 @@ namespace ECommerce.Business.Services.Interfaces
     public interface IAccountService
     {
         public Task<IdentityResult> Register(RegisterUserVm vm);
-        public Task<LoginResult> Login(LoginUserVm vm);
+        public Task<AppUser> Login(LoginUserVm vm);
         public Task CreateRole();
-    }
-    public class LoginResult
-    {
-        public bool Success { get; set; }
-        public AppUser? user { get; set; }
     }
 }

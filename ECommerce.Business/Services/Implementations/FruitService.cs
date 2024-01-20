@@ -24,50 +24,49 @@ namespace ECommerce.Business.Services.Implementations
             _fruitRepository = fruitRepository;
             _mapper = mapper;
         }
-
-        public async Task CreateAsync(CreateFruitVm vm, string env)
-        {
-            Fruit fruit = _mapper.Map<Fruit>(vm);
-            fruit.ImgUrl = vm.Image.UploadImg(env, @"/Upload/FruitImages/");
-            await _fruitRepository.CreateAsync(fruit);
-            await _fruitRepository.SaveChangesAsync();
-        }
-
-        public async Task Delete(int id, string env)
-        {
-            if (id <= 0) throw new NegativeIdException("Invalid ID received", nameof(id));
-            Fruit fruit = await _fruitRepository.GetByIdAsync(id);
-            if (fruit == null) throw new FruitNotFoundException("The fruit not found.", nameof(fruit));
-            fruit.ImgUrl.DeleteImg(env, @"/Upload/FruitImages");
-            await _fruitRepository.Delete(fruit);
-            await _fruitRepository.SaveChangesAsync();
-        }
-
         public async Task<IQueryable<Fruit>> GetAllAsync()
         {
             return await _fruitRepository.GetAllAsync();
         }
-
         public async Task<Fruit> GetByIdAsync(int id)
         {
             if (id <= 0) throw new NegativeIdException("Invalid ID received", nameof(id));
             return await _fruitRepository.GetByIdAsync(id);
         }
-
+        public async Task CreateAsync(CreateFruitVm vm, string env)
+        {
+            if (!vm.Image.CheckImg()) throw new FruitImageException("The file must be image.", nameof(vm.Image));
+            Fruit fruit = _mapper.Map<Fruit>(vm);
+            fruit.ImgUrl = vm.Image.UploadImg(env, @"/Upload/FruitImages/");
+            await _fruitRepository.CreateAsync(fruit);
+            await _fruitRepository.SaveChangesAsync();
+        }
+        public async Task Delete(int id, string env)
+        {
+            var fruit = await CheckId(id);
+            //fruit.ImgUrl.DeleteImg(env, @"/Upload/FruitImages");
+            await _fruitRepository.Delete(fruit);
+            await _fruitRepository.SaveChangesAsync();
+        }
         public async Task UpdateAsync(UpdateFruitVm vm, string env)
         {
-            Fruit fruit = await _fruitRepository.GetByIdAsync(vm.Id);
+            var fruit = await CheckId(vm.Id);
             _mapper.Map(vm, fruit);
-            if(vm.Image != null)
+            if (vm.Image != null)
             {
-                if(vm.Image.CheckImg())
-                {
-                    fruit.ImgUrl.DeleteImg(env, @"/Upload/FruitImages");
-                    fruit.ImgUrl = vm.Image.UploadImg(env, @"/Upload/FruitImages/");
-                }
+                if (!vm.Image.CheckImg()) throw new FruitImageException("The file must be image.", nameof(vm.Image));
+                fruit.ImgUrl.DeleteImg(env, @"/Upload/FruitImages");
+                fruit.ImgUrl = vm.Image.UploadImg(env, @"/Upload/FruitImages/");
             }
             await _fruitRepository.UpdateAsync(fruit);
             await _fruitRepository.SaveChangesAsync();
+        }
+        public async Task<Fruit> CheckId(int id)
+        {
+            if (id <= 0) throw new NegativeIdException("Invalid ID received.", nameof(id));
+            Fruit fruit = await _fruitRepository.GetByIdAsync(id);
+            if (fruit == null) throw new FruitNotFoundException("The fruit not found.", nameof(fruit));
+            return fruit;
         }
     }
 }

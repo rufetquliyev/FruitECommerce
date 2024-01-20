@@ -12,9 +12,9 @@ namespace ECommerce.Business.ViewModels.FruitVMs
     {
         public string FruitName { get; set; }
         public string CategoryName { get; set; }
+        public IFormFile Image { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsDeleted { get; set; }
-        public IFormFile Image { get; set; }
     }
     public class CreateFruitValidator : AbstractValidator<CreateFruitVm>
     {
